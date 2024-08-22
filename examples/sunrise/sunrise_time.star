@@ -16,7 +16,6 @@ DEFAULT_LOCATION = """
 """
 
 def main(config):
-    print(10)
     location = config.get("location", DEFAULT_LOCATION)
     loc = json.decode(location)
     lat, lng = float(loc["lat"]), float(loc["lng"])
