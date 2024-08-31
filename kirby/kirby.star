@@ -5,6 +5,7 @@ load("animation.star", "animation")
 load("schema.star", "schema")
 load("frames.star", "KIRBY_FRAMES", "SKY_FRAMES")
 load("time.star", "time")
+load("math.star", "math")
 
 def slow_frames(frames, slow_factor):
     new_frames = []
@@ -45,24 +46,26 @@ def create_kirby_oscillation_key_frames(curve, oscillation_height, n_oscillation
         )
     return keyframes
 
-def main(config):
-    # When we have a get_schema() function implemented, running the app repeatedly reruns this main. Check how
-    # the time keeps getting printed out despite not changing any files. We can use this to change the animation
-    # when it's daytime.
-    print(int(3 / 2))
+def kirby_float_curve(x):
+    if x < 0.125:
+        return 0.0
+    if x > 0.875:
+        return 1.0
+    return (x - 0.125) * (1.0 / 0.75)
+
+def main():
     kirby_slow_factor = 2
     kirby_animation = render.Animation(
         children = slow_frames(KIRBY_FRAMES, kirby_slow_factor)
     )
 
     n_sky_frames = len(SKY_FRAMES)
-    sky_slow_factor = 15
+    sky_slow_factor = 12
     sky_animation = render.Animation(
         children = slow_frames(SKY_FRAMES, sky_slow_factor)
     )
 
-    return render.Root(
-        child = render.Stack(  
+    night_time_animation = render.Stack(  
             children = [
                 sky_animation,
                 animation.Transformation( # This animation only replays once the other animations in this stack are done. Check README for workaround.
@@ -72,22 +75,26 @@ def main(config):
                     origin = animation.Origin(0, 0),
                     direction = "alternate",
                     fill_mode = "forwards",
-                    keyframes = create_kirby_oscillation_key_frames("ease_in_out", 3, 10),
+                    keyframes = create_kirby_oscillation_key_frames(kirby_float_curve, 3, 5),
                 ),
+                render.Text()
             ]
-        ),
+        )
+
+    return render.Root(
+        child = night_time_animation,
         show_full_animation = True
     )
 
-def get_schema():
-    return schema.Schema(
-        version = "1",
-        fields = [
-            schema.Location(
-                id = "location",
-                name = "Location",
-                desc = "Location for which to display time.",
-                icon = "locationDot",
-            ),
-        ],
-    )
+# def get_schema():
+#     return schema.Schema(
+#         version = "1",
+#         fields = [
+#             schema.Location(
+#                 id = "location",
+#                 name = "Location",
+#                 desc = "Location for which to display time.",
+#                 icon = "locationDot",
+#             ),
+#         ],
+#     )
